@@ -1,30 +1,45 @@
 cmake_minimum_required(VERSION 3.8)
 project(foundation_stereo_ros)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+include(ExternalProject)
 
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-# add_executable(foundation_stereo_node src/foundation_stereo_node.cpp)
-# target_include_directories(foundation_stereo_node PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>)
-# target_compile_features(foundation_stereo_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-# ament_target_dependencies(
-#   foundation_stereo_node
-#   "sensor_msgs/Image"
-#   "sensor_msgs/CameraInfo"
-#   "sensor_msgs/PointCloud2"
-#   "cv_bridge"
-# )
 
-# install(TARGETS foundation_stereo_node
-#   DESTINATION lib/${PROJECT_NAME})
+set(EXTERNAL_DIR "${CMAKE_BINARY_DIR}/external")
+
+ExternalProject_Add(
+    FoundationStereo
+    GIT_REPOSITORY https://github.com/NVlabs/FoundationStereo.git
+    GIT_TAG master
+    PREFIX ${EXTERNAL_DIR}
+    UPDATE_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "No build step needed for Python projects"
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "No install step needed for Python projects"
+)
+
+ExternalProject_Get_Property(FoundationStereo SOURCE_DIR)
+set(FOUNDATION_STEREO_DIR ${SOURCE_DIR})
+
+execute_process(
+    COMMAND bash -c "awk '/- pip:/,/- dependencies:/' '${FOUNDATION_STEREO_DIR}/environment.yml' | sed '1d;$d' | sed 's/^[[:space:]]*-\\s*//g' > '${FOUNDATION_STEREO_DIR}/requirements.txt'"
+    WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
+    RESULT_VARIABLE result
+    OUTPUT_VARIABLE output
+    ERROR_VARIABLE error_output
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
+add_custom_command(
+    TARGET FoundationStereo
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Installing pip dependencies..."
+    COMMAND pip3 install -r ${FOUNDATION_STEREO_DIR}/requirements.txt --no-build-isolation --ignore-installed
+    WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
+)
 
 install(PROGRAMS
   ${PROJECT_NAME}/foundation_stereo_node.py
