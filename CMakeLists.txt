@@ -7,8 +7,7 @@ find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-
-set(EXTERNAL_DIR "${CMAKE_BINARY_DIR}/external")
+set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/external")
 
 ExternalProject_Add(
     FoundationStereo
@@ -22,29 +21,29 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(FoundationStereo SOURCE_DIR)
-set(FOUNDATION_STEREO_DIR ${SOURCE_DIR})
+# set(FOUNDATION_STEREO_DIR ${SOURCE_DIR})
 
-execute_process(
-    COMMAND bash -c "awk '/- pip:/,/- dependencies:/' '${FOUNDATION_STEREO_DIR}/environment.yml' | sed '1d;$d' | sed 's/^[[:space:]]*-\\s*//g' > '${FOUNDATION_STEREO_DIR}/requirements.txt'"
-    WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE output
-    ERROR_VARIABLE error_output
-    COMMAND_ERROR_IS_FATAL ANY
-)
+# execute_process(
+#   COMMAND bash -c "awk '/- pip:/,/- dependencies:/' '${FOUNDATION_STEREO_DIR}/environment.yml' | sed '1d;$d' | sed 's/^[[:space:]]*-\\s*//g' > '${FOUNDATION_STEREO_DIR}/requirements.txt'"
+#   WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
+#   RESULT_VARIABLE result
+#   OUTPUT_VARIABLE output
+#   ERROR_VARIABLE error_output
+#   COMMAND_ERROR_IS_FATAL ANY
+# )
 
-add_custom_command(
-    TARGET FoundationStereo
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Installing pip dependencies..."
-    COMMAND pip3 install -r ${FOUNDATION_STEREO_DIR}/requirements.txt --no-build-isolation --ignore-installed
-    WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
-)
+# add_custom_command(
+#   TARGET FoundationStereo
+#   POST_BUILD
+#   COMMAND ${CMAKE_COMMAND} -E echo "Installing pip dependencies..."
+#   COMMAND pip3 install -r ${FOUNDATION_STEREO_DIR}/requirements.txt --no-build-isolation --ignore-installed
+#   WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
+#   )
 
 install(PROGRAMS
   ${PROJECT_NAME}/foundation_stereo_node.py
   DESTINATION lib/${PROJECT_NAME}
-)
+  )
 
 install(TARGETS DESTINATION lib/${PROJECT_NAME})
 
