@@ -7,49 +7,37 @@ find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/external")
+set(REQUIREMENTS_FILE "${CMAKE_SOURCE_DIR}/requirements.txt")
 
-ExternalProject_Add(
-    FoundationStereo
-    GIT_REPOSITORY https://github.com/NVlabs/FoundationStereo.git
-    GIT_TAG master
-    PREFIX ${EXTERNAL_DIR}
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "No build step needed for Python projects"
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "No install step needed for Python projects"
-)
+if(EXISTS ${REQUIREMENTS_FILE})
+  message(STATUS "requirements.txt found, installing dependencies.")
 
-ExternalProject_Get_Property(FoundationStereo SOURCE_DIR)
-# set(FOUNDATION_STEREO_DIR ${SOURCE_DIR})
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -m pip install -r ${REQUIREMENTS_FILE} --ignore-installed --no-build-isolation
+    RESULT_VARIABLE install_result
+    ERROR_VARIABLE install_error
+  )
 
-# execute_process(
-#   COMMAND bash -c "awk '/- pip:/,/- dependencies:/' '${FOUNDATION_STEREO_DIR}/environment.yml' | sed '1d;$d' | sed 's/^[[:space:]]*-\\s*//g' > '${FOUNDATION_STEREO_DIR}/requirements.txt'"
-#   WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
-#   RESULT_VARIABLE result
-#   OUTPUT_VARIABLE output
-#   ERROR_VARIABLE error_output
-#   COMMAND_ERROR_IS_FATAL ANY
-# )
-
-# add_custom_command(
-#   TARGET FoundationStereo
-#   POST_BUILD
-#   COMMAND ${CMAKE_COMMAND} -E echo "Installing pip dependencies..."
-#   COMMAND pip3 install -r ${FOUNDATION_STEREO_DIR}/requirements.txt --no-build-isolation --ignore-installed
-#   WORKING_DIRECTORY ${FOUNDATION_STEREO_DIR}
-#   )
+  if(NOT install_result EQUAL 0)
+    message(FATAL_ERROR "Failed to install dependencies from requirements.txt: ${install_error}")
+  else()
+    message(STATUS "Dependencies installed successfully.")
+  endif()
+else()
+  message(WARNING "requirements.txt not found. Skipping installation.")
+endif()
 
 install(PROGRAMS
   ${PROJECT_NAME}/foundation_stereo_node.py
   DESTINATION lib/${PROJECT_NAME}
-  )
+)
 
 install(TARGETS DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
   launch
-  DESTINATION share/${PROJECT_NAME}/)
+  DESTINATION share/${PROJECT_NAME}/
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
