@@ -7,7 +7,7 @@ find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-set(REQUIREMENTS_FILE "${CMAKE_SOURCE_DIR}/requirements.txt")
+set(REQUIREMENTS_FILE "${CMAKE_SOURCE_DIR}/foundation_stereo/requirements.txt")
 
 if(EXISTS ${REQUIREMENTS_FILE})
   message(STATUS "requirements.txt found, installing dependencies.")
