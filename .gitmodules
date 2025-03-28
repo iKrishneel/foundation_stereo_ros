@@ -1,3 +1,3 @@
-[submodule "foundation_stereo_lib"]
-	path = foundation_stereo_lib
-	url = https://github.com/NVlabs/FoundationStereo.git
+[submodule "foundation_stereo"]
+	path = foundation_stereo
+	url = https://github.com/iKrishneel/foundation_stereo.git
