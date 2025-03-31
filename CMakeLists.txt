@@ -1,19 +1,17 @@
 cmake_minimum_required(VERSION 3.8)
 project(foundation_stereo_ros)
 
-include(ExternalProject)
-
 find_package(ament_cmake REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-set(REQUIREMENTS_FILE "${CMAKE_SOURCE_DIR}/foundation_stereo/requirements.txt")
+set(LIB_DIR "${CMAKE_SOURCE_DIR}/foundation_stereo")
 
-if(EXISTS ${REQUIREMENTS_FILE})
+if(EXISTS ${LIB_DIR})
   message(STATUS "requirements.txt found, installing dependencies.")
 
   execute_process(
-    COMMAND ${Python3_EXECUTABLE} -m pip install -r ${REQUIREMENTS_FILE} --ignore-installed --no-build-isolation
+    COMMAND ${Python3_EXECUTABLE} -m pip install -r ${LIB_DIR}/requirements.txt --ignore-installed --no-build-isolation
     RESULT_VARIABLE install_result
     ERROR_VARIABLE install_error
   )
@@ -26,6 +24,14 @@ if(EXISTS ${REQUIREMENTS_FILE})
 else()
   message(WARNING "requirements.txt not found. Skipping installation.")
 endif()
+
+execute_process(
+  COMMAND ${Python3_EXECUTABLE} -m pip install e ${LIB_DIR}
+  RESULT_VARIABLE install_result
+  OUTPUT_VARIABLE install_output
+  ERROR_VARIABLE install_error
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 install(PROGRAMS
   ${PROJECT_NAME}/foundation_stereo_node.py
