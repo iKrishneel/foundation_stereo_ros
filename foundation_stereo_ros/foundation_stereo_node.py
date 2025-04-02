@@ -86,11 +86,14 @@ class FoundationStereo(Node):
     def callback(self, img_left: Image, img_right: Image, info: CameraInfo = None) -> None:
         header = img_left.header
         img_left, img_right = [self.imgmsg_to_cv2(msg) for msg in [img_left, img_right]]
+        img_left, img_right = [img[..., :3] for img in [img_left, img_right] if img.shape[-1] == 4]
 
         self.logger.warn(f'>>> {img_left.shape}')
         
         if self.scale < 1:
-            img_left, img_right = [cv.resize(img, fx=self.scale, fy=self.scale, dsize=None) for img in [img_left, img_right]]
+            img_left, img_right = (
+                cv.resize(img, fx=self.scale, fy=self.scale, dsize=None) for img in [img_left, img_right]
+            )
 
         import time; st = time.time()
         disparity = self.engine(img_left, img_right)
@@ -106,7 +109,7 @@ class FoundationStereo(Node):
         if hasattr(self, 'pub_pcd') and self.pub_pcd.get_subscription_count() > 0:
             points = self.to_pcd(im_depth, intrinsic)            
 
-            rgb_values = img_left.reshape(-1, 3)
+            rgb_values = img_left.reshape(-1, 3).astype(np.uint32)
             rgb_values = (rgb_values[:, 0] << 16) | (rgb_values[:, 1] << 8) | rgb_values[:, 2]
 
             pcd = create_cloud(header, self.fields, zip(points[:, 0],points[:, 1], points[:, 2], rgb_values))
