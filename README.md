@@ -32,7 +32,7 @@ $ rosdep install --from-paths src --ignore-src -r -y
 3. Build the Package
 Build the package using colcon:​
 ```bash
-$ colcon build --symlink-install --packages-up-to foundation_stereo_ros
+$ colcon build --symlink-install --event-handlers console_direct+ --packages-up-to foundation_stereo_ros
 ```
 
 4. Download Pretrained Weights
