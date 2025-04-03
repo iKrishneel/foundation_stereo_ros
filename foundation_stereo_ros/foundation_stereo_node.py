@@ -2,7 +2,7 @@
 
 from typing import List
 import importlib
-import os.path as osp
+import os
 import numpy as np
 import cv2 as cv
 import rclpy
@@ -53,6 +53,7 @@ class FoundationStereo(Node):
         self.declare_parameter('baseline', 0.1)
         self.declare_parameter('scale', 1.0)
         self.declare_parameter('pub_pcd', False)
+        self.declare_parameter('weights', '')
 
         config = self.get_parameter('config').get_parameter_value().string_value
         slop = self.get_parameter('slop').get_parameter_value().double_value
@@ -60,14 +61,20 @@ class FoundationStereo(Node):
         self.baseline = self.get_parameter('baseline').get_parameter_value().double_value
         self.scale = self.get_parameter('scale').get_parameter_value().double_value
         pub_pcd = self.get_parameter('pub_pcd').get_parameter_value().bool_value
+        weights = self.get_parameter('weights').get_parameter_value().string_value
 
-        assert osp.isfile(config), f'{config} not found!'
+        assert os.path.isfile(config), f'{config} not found!'
         assert self.baseline >  0.0
         assert self.scale <= 1.0
 
+        if len(weights) > 0:
+            self.logger.info(f'Using weights {weights}')
+            os.environ['WEIGHTS'] = weights
+        
         config = get_full_config(config)
         if config.driver is not None:
-            importlib.import_module(config.driver) 
+            importlib.import_module(config.driver)
+
         self.engine = build_engine(config)
 
         self.pub_depth = self.create_publisher(Image, 'depth', queue_size)
@@ -87,19 +94,14 @@ class FoundationStereo(Node):
         header = img_left.header
         img_left, img_right = [self.imgmsg_to_cv2(msg) for msg in [img_left, img_right]]
         img_left, img_right = [img[..., :3] for img in [img_left, img_right] if img.shape[-1] == 4]
-
-        self.logger.warn(f'>>> {img_left.shape}')
         
         if self.scale < 1:
             img_left, img_right = (
                 cv.resize(img, fx=self.scale, fy=self.scale, dsize=None) for img in [img_left, img_right]
             )
 
-        import time; st = time.time()
         disparity = self.engine(img_left, img_right)
-        self.logger.info(f'Time {time.time() - st}')
 
-        # intrinsic = np.array([[1952.5, 0, 1104], [0, 1952.5, 621], [0, 0, 1]])
         intrinsic = np.array(info.k).reshape(-1, 3)
         intrinsic[:2] *= self.scale
         im_depth = intrinsic[0, 0] * self.baseline / disparity

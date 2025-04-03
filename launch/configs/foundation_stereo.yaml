@@ -1,0 +1,38 @@
+driver: foundation_stereo
+dtype: float16
+device: cuda:0
+
+transforms:
+  foundation_stereo:
+    ToTensor:
+    ResizeLongestSide:
+      size: 540
+    ResizeToDivisible:
+      factor: 32
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+models:
+  foundation_stereo:
+    corr_levels: 2
+    corr_radius: 4
+    hidden_dims:
+      - 128
+      - 128
+      - 128
+    max_disp: 416
+    n_downsample: 2
+    n_gru_layers: 3
+    mixed_precision: true
+
+build:
+  model: foundation_stereo
+  mode: inference
+
+  foundation_stereo:
+    weights: ${oc.env:WEIGHTS}    
+    inference:
+      engine: stereo_inference_engine
+      transforms: foundation_stereo
+      hiera: False

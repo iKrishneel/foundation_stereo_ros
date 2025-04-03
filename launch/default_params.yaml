@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    queue_size: 10
+    slop: 0.1
+
+/foundation_stereo_node:
+  ros__parameters:
+    config: ../foundation_stereo/configs/foundation_stereo.yaml
+    scale: 0.1
+    pub_pcd: False
+
