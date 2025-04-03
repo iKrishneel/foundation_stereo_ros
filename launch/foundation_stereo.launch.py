@@ -23,7 +23,7 @@ def launch_setup(context, *args, **kwargs):
         package=_package,
         executable='foundation_stereo_node.py',
         name='foundation_stereo',
-        remappings=[('left', left_topic), ('right', right_topic), ('info', 'info_topic')],
+        remappings=[('left', left_topic), ('right', right_topic), ('info', info_topic)],
         parameters=[{'config': config, 'pub_pub': pub_pcd, 'weights': weights}, param_file],
         respawn=False,
         output='both',
