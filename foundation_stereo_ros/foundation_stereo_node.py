@@ -52,6 +52,7 @@ class FoundationStereo(Node):
         self.declare_parameter('config', '')
         self.declare_parameter('baseline', 0.1)
         self.declare_parameter('scale', 1.0)
+        self.declare_parameter('depth_scale', 1.0)        
         self.declare_parameter('pub_pcd', False)
         self.declare_parameter('weights', '')
 
@@ -60,6 +61,7 @@ class FoundationStereo(Node):
         queue_size = self.get_parameter('queue_size').get_parameter_value().integer_value
         self.baseline = self.get_parameter('baseline').get_parameter_value().double_value
         self.scale = self.get_parameter('scale').get_parameter_value().double_value
+        self.depth_scale = self.get_parameter('depth_scale').get_parameter_value().double_value        
         pub_pcd = self.get_parameter('pub_pcd').get_parameter_value().bool_value
         weights = self.get_parameter('weights').get_parameter_value().string_value
 
@@ -105,6 +107,7 @@ class FoundationStereo(Node):
         intrinsic = np.array(info.k).reshape(-1, 3)
         intrinsic[:2] *= self.scale
         im_depth = intrinsic[0, 0] * self.baseline / disparity
+        im_depth *= self.depth_scale
 
         im_depth = im_depth.cpu().numpy() if not isinstance(im_depth, np.ndarray) else im_depth
 
@@ -115,7 +118,6 @@ class FoundationStereo(Node):
             rgb_values = (rgb_values[:, 0] << 16) | (rgb_values[:, 1] << 8) | rgb_values[:, 2]
 
             pcd = create_cloud(header, self.fields, zip(points[:, 0],points[:, 1], points[:, 2], rgb_values))
-            pcd.header.frame_id = 'map'
             self.pub_pcd.publish(pcd)
 
         im_depth = self.bridge.cv2_to_imgmsg(im_depth)

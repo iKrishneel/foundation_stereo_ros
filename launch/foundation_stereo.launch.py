@@ -15,8 +15,10 @@ def launch_setup(context, *args, **kwargs):
     param_file = LaunchConfiguration('param_file')
     assert osp.isfile(param_file.perform(context)), f'{param_file.perform(context)} not found!'
     
-    ns, left_topic, right_topic, info_topic, baseline, config, pub_pcd, weights = [
-        LaunchConfiguration(name) for name in ['ns', 'left', 'right', 'info', 'baseline', 'config', 'pub_pcd', 'weights']
+    ns, left_topic, right_topic, info_topic, baseline, config, pub_pcd, weights, depth_scale = [
+        LaunchConfiguration(name) for name in [
+            'ns', 'left', 'right', 'info', 'baseline', 'config', 'pub_pcd', 'weights', 'depth_scale',
+        ]
     ]
 
     stereo_node = Node(
@@ -24,7 +26,7 @@ def launch_setup(context, *args, **kwargs):
         executable='foundation_stereo_node.py',
         name='foundation_stereo',
         remappings=[('left', left_topic), ('right', right_topic), ('info', info_topic)],
-        parameters=[{'config': config, 'pub_pub': pub_pcd, 'weights': weights}, param_file],
+        parameters=[{'config': config, 'pub_pcd': pub_pcd, 'weights': weights, 'depth_scale': depth_scale}, param_file],
         respawn=False,
         output='both',
         namespace=ns,
@@ -46,6 +48,7 @@ def generate_launch_description():
         DeclareLaunchArgument('config', default_value=config, description='Igniter config file'),
         DeclareLaunchArgument('pub_pcd', default_value=config, description='Publish point cloud'),
         DeclareLaunchArgument('weights', default_value='', description='Foundation stereo model weights'),
+        DeclareLaunchArgument('depth_scale', default_value='3.0', description='Depth scaling factor'),        
     ]
 
     return LaunchDescription(declared_args + [OpaqueFunction(function=launch_setup)])
