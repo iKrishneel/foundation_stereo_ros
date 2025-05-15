@@ -1,0 +1,4 @@
+weights/model_best_bp2.aa filter=lfs diff=lfs merge=lfs -text
+weights/model_best_bp2.ab filter=lfs diff=lfs merge=lfs -text
+weights/model_best_bp2.ac filter=lfs diff=lfs merge=lfs -text
+weights/model_best_bp2.ad filter=lfs diff=lfs merge=lfs -text
