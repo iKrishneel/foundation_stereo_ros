@@ -27,4 +27,5 @@ RUN rosdep install -ryi --from-paths ./src/ && \
     source /opt/ros/$ROS_DISTRO/setup.bash && \
     colcon build --symlink-install --event-handlers console_direct+ --packages-up-to foundation_stereo_ros && \
     echo "source /root/ros/$ROS_DISTRO/install/setup.bash" >> ~/.bashrc && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf ./src/foundation_stereo_ros/weights/model_best_bp2.a*

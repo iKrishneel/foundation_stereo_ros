@@ -38,6 +38,9 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     param_file = osp.join(get_package_share_directory(_package), 'launch/', 'default_params.yaml')
     config = osp.join(get_package_share_directory(_package), 'launch/configs', 'foundation_stereo.yaml ')
+    weights = osp.join(get_package_share_directory(_package), 'weights/', 'model_best_bp2.pth')
+    weights = weights if osp.isfile(weights) else ''
+
     declared_args = [
         DeclareLaunchArgument('param_file', default_value=param_file, description='Parameter file'),
         DeclareLaunchArgument('ns', default_value='/', description='Namespace'),
@@ -47,7 +50,7 @@ def generate_launch_description():
         DeclareLaunchArgument('baseline', default_value='0.12', description='Baseline between two camera in meters'),
         DeclareLaunchArgument('config', default_value=config, description='Igniter config file'),
         DeclareLaunchArgument('pub_pcd', default_value=config, description='Publish point cloud'),
-        DeclareLaunchArgument('weights', default_value='', description='Foundation stereo model weights'),
+        DeclareLaunchArgument('weights', default_value=weights, description='Foundation stereo model weights'),
         DeclareLaunchArgument('depth_scale', default_value='3.0', description='Depth scaling factor'),        
     ]
 
