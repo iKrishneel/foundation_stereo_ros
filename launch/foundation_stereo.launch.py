@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import os.path as osp
 
 from ament_index_python.packages import get_package_share_directory
@@ -38,7 +39,7 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     param_file = osp.join(get_package_share_directory(_package), 'launch/', 'default_params.yaml')
     config = osp.join(get_package_share_directory(_package), 'launch/configs', 'foundation_stereo.yaml ')
-    weights = osp.join(get_package_share_directory(_package), 'weights/', 'model_best_bp2.pth')
+    weights = osp.join(os.environ['HOME'], '.cache/torch/model_best_bp2.pth')
     weights = weights if osp.isfile(weights) else ''
 
     declared_args = [
