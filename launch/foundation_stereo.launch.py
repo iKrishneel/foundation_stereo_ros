@@ -50,7 +50,7 @@ def generate_launch_description():
         DeclareLaunchArgument('info', default_value='/camera/right/camera_info', description='Left camera info topic'),
         DeclareLaunchArgument('baseline', default_value='0.12', description='Baseline between two camera in meters'),
         DeclareLaunchArgument('config', default_value=config, description='Igniter config file'),
-        DeclareLaunchArgument('pub_pcd', default_value=config, description='Publish point cloud'),
+        DeclareLaunchArgument('pub_pcd', default_value='False', description='Publish point cloud'),
         DeclareLaunchArgument('weights', default_value=weights, description='Foundation stereo model weights'),
         DeclareLaunchArgument('depth_scale', default_value='3.0', description='Depth scaling factor'),        
     ]
