@@ -16,17 +16,23 @@ def launch_setup(context, *args, **kwargs):
     param_file = LaunchConfiguration('param_file')
     assert osp.isfile(param_file.perform(context)), f'{param_file.perform(context)} not found!'
     
-    ns, left_topic, right_topic, info_topic, baseline, config, pub_pcd, weights, depth_scale, depth = [
+    ns, left_topic, right_topic, info_topic, baseline, config, weights, depth_scale, depth, points = [
         LaunchConfiguration(name) for name in [
-            'ns', 'left', 'right', 'info', 'baseline', 'config', 'pub_pcd', 'weights', 'depth_scale', 'depth'
+            'ns', 'left', 'right', 'info', 'baseline', 'config', 'weights', 'depth_scale', 'depth', 'points'
         ]
     ]
+
+    pub_pcd = False
+    remappings = [('left', left_topic), ('right', right_topic), ('info', info_topic), ('depth', depth)]
+    if len(points.perform(context)) > 0:
+        remappings.append(('points', points))
+        pub_pcd = True
 
     stereo_node = Node(
         package=_package,
         executable='foundation_stereo_node.py',
         name='foundation_stereo',
-        remappings=[('left', left_topic), ('right', right_topic), ('info', info_topic), ('depth', depth)],
+        remappings=remappings,
         parameters=[{'config': config, 'pub_pcd': pub_pcd, 'weights': weights, 'depth_scale': depth_scale}, param_file],
         respawn=False,
         output='both',
@@ -49,9 +55,10 @@ def generate_launch_description():
         DeclareLaunchArgument('right', default_value='/camera/right/image_raw', description='Right camera image topic'),
         DeclareLaunchArgument('info', default_value='/camera/right/camera_info', description='Left camera info topic'),
         DeclareLaunchArgument('depth', default_value='/depth', description='Output depth topic'),
+        DeclareLaunchArgument('points', default_value='', description='Output points topic'),
         DeclareLaunchArgument('baseline', default_value='0.12', description='Baseline between two camera in meters'),
         DeclareLaunchArgument('config', default_value=config, description='Igniter config file'),
-        DeclareLaunchArgument('pub_pcd', default_value='False', description='Publish point cloud'),
+        # DeclareLaunchArgument('pub_pcd', default_value='False', description='Publish point cloud'),
         DeclareLaunchArgument('weights', default_value=weights, description='Foundation stereo model weights'),
         DeclareLaunchArgument('depth_scale', default_value='1.0', description='Depth scaling factor'),
     ]
